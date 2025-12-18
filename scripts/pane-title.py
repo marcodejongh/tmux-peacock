@@ -25,9 +25,35 @@ def get_git_toplevel(directory):
     return None
 
 
-def get_worktree_info(directory):
+def get_git_branch(git_root):
+    """Get current git branch by reading .git/HEAD directly (fast for large repos)"""
+    git_path = Path(git_root) / '.git'
+
+    # Handle worktrees where .git is a file pointing to the real git dir
+    if git_path.is_file():
+        content = git_path.read_text().strip()
+        if content.startswith('gitdir: '):
+            git_path = Path(content[8:])
+
+    head_file = git_path / 'HEAD'
+    if not head_file.exists():
+        return None
+
+    head_content = head_file.read_text().strip()
+
+    # Symbolic ref: "ref: refs/heads/branch-name"
+    if head_content.startswith('ref: refs/heads/'):
+        return head_content[16:]
+
+    # Detached HEAD: raw SHA
+    if len(head_content) == 40 and all(c in '0123456789abcdef' for c in head_content):
+        return head_content[:7]  # Short SHA
+
+    return None
+
+
+def get_worktree_info(directory, git_root):
     """Get worktree/repo name and relative path within it"""
-    git_root = get_git_toplevel(directory)
     if not git_root:
         return None, None
 
@@ -78,13 +104,19 @@ def main():
     """Generate title for the given directory"""
     directory = sys.argv[1] if len(sys.argv) > 1 else os.getcwd()
 
-    worktree_name, subdir = get_worktree_info(directory)
+    git_root = get_git_toplevel(directory)
 
-    if worktree_name:
+    if git_root:
+        worktree_name, subdir = get_worktree_info(directory, git_root)
+        branch = get_git_branch(git_root)
+
+        # Build title: repo@branch:subdir
+        title = worktree_name
+        if branch:
+            title += f"@{branch}"
         if subdir:
-            print(f"{worktree_name}/{subdir}")
-        else:
-            print(worktree_name)
+            title += f":{subdir}"
+        print(title)
     else:
         normalized_path = normalize_path(directory)
         if normalized_path == "~":
