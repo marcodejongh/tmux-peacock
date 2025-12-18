@@ -8,11 +8,11 @@
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Get plugin directory
 get_tmux_option() {
     local option=$1
     local default_value=$2
-    local option_value=$(tmux show-option -gqv "$option")
+    local option_value
+    option_value=$(tmux show-option -gqv "$option")
     if [ -z "$option_value" ]; then
         echo "$default_value"
     else
@@ -20,25 +20,25 @@ get_tmux_option() {
     fi
 }
 
-# Setup hooks for peacock color sync
 setup_peacock_hooks() {
-    # Hook to update colors when switching panes
-    tmux set-hook -g after-select-pane "run-shell \"$CURRENT_DIR/scripts/peacock-sync.py '#{pane_current_path}' 2>/dev/null\""
-
-    # Hook to sync colors when creating new panes
-    tmux set-hook -g after-split-window "run-shell \"$CURRENT_DIR/scripts/peacock-sync.py '#{pane_current_path}' 2>/dev/null\""
-    tmux set-hook -g after-new-window "run-shell \"$CURRENT_DIR/scripts/peacock-sync.py '#{pane_current_path}' 2>/dev/null\""
+    # Use -ga (append) to not clobber other plugins' hooks
+    # Use -b (background) to not block tmux during script execution
+    # Use #{q:...} to safely quote paths with spaces/special chars
+    tmux set-hook -ga after-select-pane "run-shell -b \"$CURRENT_DIR/scripts/peacock-sync.py '#{q:pane_current_path}' 2>/dev/null\""
+    tmux set-hook -ga after-split-window "run-shell -b \"$CURRENT_DIR/scripts/peacock-sync.py '#{q:pane_current_path}' 2>/dev/null\""
+    tmux set-hook -ga after-new-window "run-shell -b \"$CURRENT_DIR/scripts/peacock-sync.py '#{q:pane_current_path}' 2>/dev/null\""
 }
 
-# Setup pane border format with colored title
 setup_pane_borders() {
     tmux set-option -g pane-border-status top
-    tmux set-option -g pane-border-format " #($CURRENT_DIR/scripts/pane-title-colored.py '#{pane_current_path}') "
+    # Use #{q:...} to safely quote paths with spaces/special chars
+    tmux set-option -g pane-border-format " #($CURRENT_DIR/scripts/pane-title-colored.py '#{q:pane_current_path}') "
 }
 
 initialize_colors() {
-    # Apply colors to current pane on startup
-    $CURRENT_DIR/scripts/peacock-sync.py "#{pane_current_path}" 2>/dev/null || true
+    # Run via tmux run-shell so #{pane_current_path} gets expanded properly
+    # Use -b for background execution
+    tmux run-shell -b "$CURRENT_DIR/scripts/peacock-sync.py '#{q:pane_current_path}' 2>/dev/null || true"
 }
 
 main() {
