@@ -54,44 +54,6 @@ tmux source-file ~/.tmux.conf
 3. If no Peacock color is set, it generates a consistent color based on the directory name using a hash function
 4. Colors are cached in `~/.config/tmux-peacock-colors.json`
 
-## Shell Integration (Optional but Recommended)
-
-For automatic color updates when changing directories, add the zsh plugin to your shell configuration:
-
-### Setup
-
-1. **If using TPM**, add to your `~/.zshrc`:
-```bash
-# Add to your ~/.zshrc
-source ~/.tmux/plugins/tmux-peacock/scripts/tmux-peacock.zsh
-```
-
-2. **If manually installed**, adjust the path accordingly:
-```bash
-# Add to your ~/.zshrc (adjust path as needed)
-source ~/path/to/tmux-peacock/scripts/tmux-peacock.zsh
-```
-
-3. **Reload your shell configuration**:
-```bash
-source ~/.zshrc
-```
-
-### Features
-
-With shell integration enabled:
-- **Automatic color updates** when you `cd` into different projects
-- **Instant color changes** when switching between git worktrees
-- **Works with all directory navigation** tools (cd, pushd, popd, z, autojump, etc.)
-- **Manual refresh command** available:
-  ```bash
-  tmux-peacock-refresh
-  ```
-
-### How It Works
-
-The shell integration uses zsh's `chpwd` hook to detect directory changes and automatically triggers the peacock color sync. This ensures your tmux pane colors always reflect your current project context without any manual intervention.
-
 ## Color Generation
 
 For projects without VS Code Peacock configured, tmux-peacock generates distinctive colors using:
