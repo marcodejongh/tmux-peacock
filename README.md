@@ -1,6 +1,7 @@
 # tmux-peacock
 
-<img width="2560" height="1440" alt="Screenshot 2025-12-19 at 10 53 59" src="https://github.com/user-attachments/assets/9dba82d4-3c9a-4de1-8c7b-156761244f5a" />
+<img width="2560" height="1440" alt="Screenshot 2025-12-19 at 10 57 43" src="https://github.com/user-attachments/assets/97fcb47f-ae4f-4739-ae31-a18ede257564" />
+
 
 A tmux plugin that syncs pane border colors with the [VS Code Peacock extension](https://marketplace.visualstudio.com/items?itemName=johnpapa.vscode-peacock).
 
