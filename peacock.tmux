@@ -36,9 +36,15 @@ setup_pane_borders() {
     tmux set-option -g pane-border-format " #($CURRENT_DIR/scripts/pane-title.py '#{pane_current_path}') "
 }
 
+initialize_colors() {
+    # Apply colors to current pane on startup
+    $CURRENT_DIR/scripts/peacock-sync.py "#{pane_current_path}" 2>/dev/null || true
+}
+
 main() {
     setup_peacock_hooks
     setup_pane_borders
+    initialize_colors
 }
 
 main
