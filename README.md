@@ -1,8 +1,11 @@
 # tmux-peacock
 
+<img width="2560" height="1440" alt="Screenshot 2025-12-19 at 10 53 59" src="https://github.com/user-attachments/assets/9dba82d4-3c9a-4de1-8c7b-156761244f5a" />
+
 A tmux plugin that syncs pane border colors with the [VS Code Peacock extension](https://marketplace.visualstudio.com/items?itemName=johnpapa.vscode-peacock).
 
-When you switch between panes in different project directories, tmux-peacock automatically updates the pane border colors to match your VS Code workspace colors, making it easy to identify which project you're working in.
+When you switch between panes in different project directories, tmux-peacock automatically updates the pane border colors to match your VS Code Peacock workspace colors, making it easy to identify which project you OR AI is working in.
+If no peacock colour is set yet in the worktree, it automatically generates a colour for it.
 
 ## Features
 
