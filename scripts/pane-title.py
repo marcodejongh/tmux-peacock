@@ -25,30 +25,30 @@ def get_git_toplevel(directory):
     return None
 
 
-def get_git_branch(git_root):
-    """Get current git branch by reading .git/HEAD directly (fast for large repos)"""
-    git_path = Path(git_root) / '.git'
-
-    # Handle worktrees where .git is a file pointing to the real git dir
-    if git_path.is_file():
-        content = git_path.read_text().strip()
-        if content.startswith('gitdir: '):
-            git_path = Path(content[8:])
-
-    head_file = git_path / 'HEAD'
-    if not head_file.exists():
-        return None
-
-    head_content = head_file.read_text().strip()
-
-    # Symbolic ref: "ref: refs/heads/branch-name"
-    if head_content.startswith('ref: refs/heads/'):
-        return head_content[16:]
-
-    # Detached HEAD: raw SHA
-    if len(head_content) == 40 and all(c in '0123456789abcdef' for c in head_content):
-        return head_content[:7]  # Short SHA
-
+def get_git_branch(directory):
+    """Get current git branch name"""
+    try:
+        result = subprocess.run(
+            ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+            cwd=directory,
+            capture_output=True,
+            text=True
+        )
+        if result.returncode == 0:
+            branch = result.stdout.strip()
+            # HEAD means detached, get short SHA instead
+            if branch == 'HEAD':
+                result = subprocess.run(
+                    ['git', 'rev-parse', '--short', 'HEAD'],
+                    cwd=directory,
+                    capture_output=True,
+                    text=True
+                )
+                if result.returncode == 0:
+                    return result.stdout.strip()
+            return branch
+    except (subprocess.SubprocessError, FileNotFoundError):
+        pass
     return None
 
 
@@ -108,7 +108,7 @@ def main():
 
     if git_root:
         worktree_name, subdir = get_worktree_info(directory, git_root)
-        branch = get_git_branch(git_root)
+        branch = get_git_branch(directory)
 
         # Build title: repo@branch:subdir
         title = worktree_name
