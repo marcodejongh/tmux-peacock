@@ -190,9 +190,57 @@ def get_cache_file_path() -> Path:
     return Path.home() / ".config" / "tmux-peacock-colors.json"
 
 
+def strip_json_comments(text: str) -> str:
+    """
+    Strip JavaScript-style comments from JSON text (JSONC format).
+
+    VSCode's settings.json uses JSONC format which allows comments.
+    Python's json module doesn't support comments, so we strip them first.
+
+    Handles:
+    - Line comments: // comment
+    - Block comments: /* comment */
+    - Preserves comment-like sequences inside quoted strings
+
+    Args:
+        text: JSON text potentially containing comments
+
+    Returns:
+        JSON text with comments removed
+    """
+    result = []
+    i = 0
+    in_string = False
+
+    while i < len(text):
+        # Handle string boundaries (accounting for escaped quotes)
+        if text[i] == '"' and (i == 0 or text[i - 1] != "\\"):
+            in_string = not in_string
+            result.append(text[i])
+            i += 1
+        # Handle line comments (outside strings)
+        elif not in_string and text[i : i + 2] == "//":
+            # Skip to end of line
+            while i < len(text) and text[i] != "\n":
+                i += 1
+        # Handle block comments (outside strings)
+        elif not in_string and text[i : i + 2] == "/*":
+            i += 2
+            while i < len(text) - 1 and text[i : i + 2] != "*/":
+                i += 1
+            i += 2  # Skip closing */
+        else:
+            result.append(text[i])
+            i += 1
+
+    return "".join(result)
+
+
 def safe_read_json(path: Path, max_size: int = MAX_JSON_SIZE) -> Optional[dict]:
     """
     Safely read JSON file with symlink and size checks.
+
+    Supports JSONC format (JSON with Comments) used by VSCode settings.
 
     Args:
         path: Path to JSON file
@@ -211,7 +259,10 @@ def safe_read_json(path: Path, max_size: int = MAX_JSON_SIZE) -> Optional[dict]:
         if path.stat().st_size > max_size:
             return None
         with open(path, "r") as f:
-            return json.load(f)
+            content = f.read()
+        # Strip JSONC comments before parsing
+        content = strip_json_comments(content)
+        return json.loads(content)
     except (json.JSONDecodeError, IOError, OSError):
         return None
 
