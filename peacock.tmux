@@ -30,10 +30,10 @@ setup_peacock_hooks() {
     tmux set-hook -g after-new-window "run-shell \"$CURRENT_DIR/scripts/peacock-sync.py '#{pane_current_path}' 2>/dev/null\""
 }
 
-# Setup pane border format with title
+# Setup pane border format with colored title
 setup_pane_borders() {
     tmux set-option -g pane-border-status top
-    tmux set-option -g pane-border-format " #($CURRENT_DIR/scripts/pane-title.py '#{pane_current_path}') "
+    tmux set-option -g pane-border-format " #($CURRENT_DIR/scripts/pane-title-colored.py '#{pane_current_path}') "
 }
 
 initialize_colors() {
