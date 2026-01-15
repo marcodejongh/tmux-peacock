@@ -6,13 +6,11 @@ tmux-peacock-sync: Sync tmux pane colors with VSCode Peacock extension colors
 import os
 import subprocess
 import sys
-from pathlib import Path
 
 from peacock_utils import (
     FileLock,
     get_peacock_color,
     mute_color,
-    create_background_tint,
     SUBPROCESS_TIMEOUT,
 )
 
@@ -21,9 +19,8 @@ def set_tmux_pane_colors(color):
     if color:
         muted = mute_color(color, 0.6)
         bright = mute_color(color, 0.8)
-        bg_tint = create_background_tint(color, 0.08)
 
-        if not muted or not bright or not bg_tint:
+        if not muted or not bright:
             return
 
         try:
@@ -37,14 +34,6 @@ def set_tmux_pane_colors(color):
                     "set-option",
                     "pane-active-border-style",
                     f"fg={bright}",
-                    ";",
-                    "set-option",
-                    "window-style",
-                    f"bg={bg_tint}",
-                    ";",
-                    "set-option",
-                    "window-active-style",
-                    "bg=default",
                 ],
                 capture_output=True,
                 timeout=SUBPROCESS_TIMEOUT,
@@ -63,14 +52,6 @@ def set_tmux_pane_colors(color):
                     "set-option",
                     "pane-active-border-style",
                     "fg=colour250",
-                    ";",
-                    "set-option",
-                    "window-style",
-                    "bg=default",
-                    ";",
-                    "set-option",
-                    "window-active-style",
-                    "bg=default",
                 ],
                 capture_output=True,
                 timeout=SUBPROCESS_TIMEOUT,
